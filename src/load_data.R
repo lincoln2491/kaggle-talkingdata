@@ -1,0 +1,34 @@
+library(data.table)
+library(bit64)
+source("src/preprocessing_functions.R")
+
+gender_age_train = fread("data/gender_age_train.csv")
+phone_brand_device_model = fread("data/English_phone_brand_device_model.csv")
+phone_brand_device_model = phone_brand_device_model[duplicated(phone_brand_device_model, by = NULL) == FALSE]
+gender_age_devices = merge(x = gender_age_train, y = phone_brand_device_model, 
+						   by = "device_id", all.x = TRUE)
+
+
+# app_events = fread("data/app_events.csv")
+# app_labels = fread("data/app_labels.csv")
+# events = fread("data/events.csv")
+# gender_age_test = fread("data/gender_age_test.csv")
+# gender_age_train = fread("data/gender_age_train.csv")
+# label_categories = fread("data/label_categories.csv")
+# phone_brand_device_model = fread("data/phone_brand_device_model.csv")
+# sample_submission = fread("data/sample_submission.csv")
+
+# ids_train = unique(gender_age_train$device_id)
+# ids_test = unique(gender_age_test$device_id)
+
+
+# events_train = events[device_id %in% ids_train]
+# events_test = events[device_id %in% ids_test]
+# rm(events)
+# gc()
+# 
+# phone_brand_device_model = phone_brand_device_model[duplicated(phone_brand_device_model, by = NULL) == FALSE]
+# app_labels = app_labels[duplicated(app_labels, by = NULL) == FALSE]
+# gc()
+# 
+# train = merge_data(gender_age_train, phone_brand_device_model, app_labels, label_categories, app_events, events_train)
