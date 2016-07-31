@@ -1,12 +1,22 @@
 library(data.table)
 library(bit64)
 source("src/preprocessing_functions.R")
+source("src/classification.R")
+
+
+phone_brand_device_model = fread("data/English_phone_brand_device_model.csv")
+phone_brand_device_model = phone_brand_device_model[duplicated(phone_brand_device_model, by = "device_id") == FALSE]
+phone_brand_device_model$phone_brand = as.factor(phone_brand_device_model$phone_brand)
+phone_brand_device_model$device_model = as.factor(phone_brand_device_model$device_model)
+
 
 gender_age_train = fread("data/gender_age_train.csv")
-phone_brand_device_model = fread("data/English_phone_brand_device_model.csv")
-phone_brand_device_model = phone_brand_device_model[duplicated(phone_brand_device_model, by = NULL) == FALSE]
-gender_age_devices = merge(x = gender_age_train, y = phone_brand_device_model, 
-						   by = "device_id", all.x = TRUE)
+gender_age_devices_train = merge(x = gender_age_train, y = phone_brand_device_model,
+								 by = "device_id", all.x = TRUE)
+
+gender_age_test =  fread("data/gender_age_test.csv")
+gender_age_devices_test = merge(x = gender_age_test, y = phone_brand_device_model, 
+								by = "device_id", all.x = TRUE)
 
 
 # app_events = fread("data/app_events.csv")
