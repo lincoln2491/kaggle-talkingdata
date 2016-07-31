@@ -13,11 +13,19 @@ phone_brand_device_model$device_model = as.factor(phone_brand_device_model$devic
 gender_age_train = fread("data/gender_age_train.csv")
 gender_age_devices_train = merge(x = gender_age_train, y = phone_brand_device_model,
 								 by = "device_id", all.x = TRUE)
+rownames(gender_age_devices_train) = gender_age_devices_train$device_id
 
 gender_age_test =  fread("data/gender_age_test.csv")
 gender_age_devices_test = merge(x = gender_age_test, y = phone_brand_device_model, 
 								by = "device_id", all.x = TRUE)
+rownames(gender_age_devices_test) = gender_age_devices_test$device_id
 
+train = create_set(gender_age_devices_train)
+test = create_set(gender_age_devices_test)
+
+model = create_model(train)
+
+predictions = predict_model(model, test)
 
 # app_events = fread("data/app_events.csv")
 # app_labels = fread("data/app_labels.csv")
