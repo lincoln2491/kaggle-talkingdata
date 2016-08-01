@@ -1,5 +1,7 @@
 library(tidyr)
 library(reshape2)
+
+
 split_timestamp <- function(data){
 	data = separate(data, col = timestamp, into = c("date", "time"), sep = " ")
 	data = separate(data, col = time, into = c("hours", "minutes", "seconds"), sep = ":")

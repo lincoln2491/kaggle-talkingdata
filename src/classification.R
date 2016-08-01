@@ -1,4 +1,5 @@
 library(xgboost)
+library(Matrix)
 source("src/params.R")
 
 create_set <- function(data){
