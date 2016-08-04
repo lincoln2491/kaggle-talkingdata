@@ -1,5 +1,6 @@
 library(data.table)
 library(bit64)
+library(caret)
 source("src/preprocessing_functions.R")
 source("src/classification.R")
 
@@ -21,11 +22,17 @@ gender_age_devices_test = merge(x = gender_age_test, y = phone_brand_device_mode
 rownames(gender_age_devices_test) = gender_age_devices_test$device_id
 
 train = create_set(gender_age_devices_train)
-test = create_set(gender_age_devices_test)
+data_partition = createDataPartition(gender_age_devices_train$group, p = 0.8, list = FALSE, times = 1)
+train_set = train[data_partition] 
+test_set = train[-data_partition]
 
-model = create_model(train)
+mll = grid_search(train_set, test_set)
 
-predictions = predict_model(model, test)
+# test = create_set(gender_age_devices_test)
+# 
+# model = create_model(train)
+# 
+# predictions = predict_model(model, test)
 
 # app_events = fread("data/app_events.csv")
 # app_labels = fread("data/app_labels.csv")
