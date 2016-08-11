@@ -48,3 +48,40 @@ get_geo_statistics <- function(events){
 				 by = device_id]
 	return(sum)
 }
+
+
+load_data <-function(is_train = TRUE){
+	phone_brand_device_model = fread("data/English_phone_brand_device_model.csv")
+	phone_brand_device_model = phone_brand_device_model[duplicated(phone_brand_device_model, by = "device_id") == FALSE]
+	phone_brand_device_model$phone_brand = as.factor(phone_brand_device_model$phone_brand)
+	phone_brand_device_model$device_model = as.factor(phone_brand_device_model$device_model)
+	phone_brand_device_model$device_id = as.character(phone_brand_device_model$device_id)
+	
+	events =  fread("data/events.csv")
+	events$device_id = as.character(events$device_id)
+	events = split_timestamp(events)
+	events[(latitude < 10) & (latitude > -10) & (longitude > -10) & (longitude < 10), longitude := NA]
+	events[(latitude < 10) & (latitude > -10), latitude := NA]
+	
+	events_count_table = table(events$device_id)
+	events_count_table = as.data.table(events_count_table)
+	colnames(events_count_table) = c("device_id", "count")
+	
+	if(is_train){
+		gender_age = fread("data/gender_age_train.csv")
+	}
+	else{
+		gender_age = fread("data/gender_age_test.csv")
+	}
+	gender_age$device_id = as.character(gender_age$device_id)
+	gender_age = merge(x = gender_age, y = phone_brand_device_model,
+							 by = "device_id", all.x = TRUE)
+	rownames(gender_age) = gender_age$device_id
+	
+	gender_age = merge(gender_age, events_count_table, 
+							 by = "device_id", all.x = TRUE)
+	geo_statistics = get_geo_statistics(events)
+	gender_age = merge(gender_age, geo_statistics, by = "device_id", 
+							 all.x = TRUE)
+	return(gender_age)
+}
