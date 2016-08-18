@@ -4,7 +4,18 @@ library(MLmetrics)
 source("src/params.R")
 
 create_set <- function(data){
-	dt = data[,list(phone_brand, device_model)]
+	dt = data[,list(phone_brand, device_model, count, 
+					min_lon, max_lon, mean_lon, sd_lon, median_lon, 
+					min_lat, max_lat, mean_lat, sd_lat, median_lat, 
+					min_hour, max_hour, mean_hour, sd_hour,median_hour,
+					min_min, max_min, mean_min, sd_min, median_min,
+					min_sec, max_sec, mean_sec, sd_sec, median_sec,
+					min_tim, max_tim, mean_tim, sd_tim, median_tim,
+					d20160430, d20160501, d20160502, d20160503, d20160504,
+					d20160505, d20160506, d20160507, d20160508,
+					h0, h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, 
+					h14, h15, h16, h17, h18, h19, h20, h21, h22, h23
+	)]
 	if ("group" %in% colnames(data)){
 		dt$group = data$group
 		dt = replace_clases_with_numbers(dt)
@@ -41,7 +52,7 @@ create_model <- function(data, params = get_initial_params()){
 	labels = data[, group]
 	train = sparse.model.matrix(~.-1,data = train)
 	model = xgboost(data = train, label = labels, params = params, 
-					num_class = 12, nthread = 7, nrounds = 20,  
+					num_class = 12, nthread = 7, nrounds = 150,  
 					objective = "multi:softprob", eval_metric = "mlogloss")
 	return(model)
 }
@@ -73,10 +84,10 @@ grid_search <- function(train, test){
 	dtest = xgb.DMatrix(data = tmp[[1]], label = tmp[[2]])
 	
 	eta_vals = c(0.1, 0.01)
-	num_rounds_vals = c(500)
+	num_rounds_vals = c(150)
 	subsample_vals = c(0.3, 0.5, 0.7, 1)
 	colsample_bytree_vals = c()
-	max_depth_vals = c( 4, 6, 8, 10)
+	max_depth_vals = c( 4, 6, 8, 10, 16)
 	# early_stopping_rounds_vals = c()
 	i = 0
 	results = list()
@@ -87,7 +98,7 @@ grid_search <- function(train, test){
 					print(i)
 					set.seed(666)
 					cv_model = xgb.cv(data = dtrain, #label = train_labels, 
-									num_class = 12, nthread = 4, 
+									num_class = 12, nthread = 6, 
 									eta = eta_val,
 									max_depth = max_depth_val,
 									nrounds = num_rounds_val,
@@ -101,7 +112,7 @@ grid_search <- function(train, test){
 					
 					set.seed(666)
 					model = xgb.train(data = dtrain,
-									num_class = 12, nthread = 4, 
+									num_class = 12, nthread = 6, 
 								   	eta = eta_val,
 									max_depth = max_depth_val,
 									nrounds = num_rounds_val,
@@ -116,12 +127,13 @@ grid_search <- function(train, test){
 										mll = mll)
 					
 					results[[length(results)+1]] <- train_result
-					file_name = paste("out/cv1/", i, ".cv", sep = "")
+					file_name = paste("out/cv2/", i, ".cv", sep = "")
 					save(cv_results, file = file_name)
 					i = i + 1
 				}
 			}
 		}
+		gc()
 	}
 	stop = Sys.time()
 	print(start)
