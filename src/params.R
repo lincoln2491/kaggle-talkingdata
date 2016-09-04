@@ -11,3 +11,12 @@ model_2_params = function(){
 	)
 	return(params)
 }
+
+model_3_params = function(){
+	params = list(
+		"eta" = 0.01,
+		"subsample" = 1.0,
+		"max_depth" = 8
+	)
+	return(params)
+}

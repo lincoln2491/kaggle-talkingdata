@@ -52,7 +52,7 @@ create_model <- function(data, params = get_initial_params()){
 	labels = data[, group]
 	train = sparse.model.matrix(~.-1,data = train)
 	model = xgboost(data = train, label = labels, params = params, 
-					num_class = 12, nthread = 7, nrounds = 150,  
+					num_class = 12, nthread = 7, nrounds = 1500,  
 					objective = "multi:softprob", eval_metric = "mlogloss")
 	return(model)
 }
@@ -83,12 +83,12 @@ grid_search <- function(train, test){
 	tmp = create_set_and_labels(test)
 	dtest = xgb.DMatrix(data = tmp[[1]], label = tmp[[2]])
 	
-	eta_vals = c(0.1, 0.01)
-	num_rounds_vals = c(150)
-	subsample_vals = c(0.3, 0.5, 0.7, 1)
-	colsample_bytree_vals = c()
-	max_depth_vals = c( 4, 6, 8, 10, 16)
-	# early_stopping_rounds_vals = c()
+	eta_vals = c(0.01)
+	num_rounds_vals = c(500)
+	subsample_vals = c(0.5, 1)
+	colsample_bytree_vals = c(0.6, 0.8, 1)
+	max_depth_vals = c( 4, 6, 8)
+	early_stopping_rounds_vals = c(50)
 	i = 0
 	results = list()
 	for( eta_val in eta_vals){
@@ -117,7 +117,8 @@ grid_search <- function(train, test){
 									max_depth = max_depth_val,
 									nrounds = num_rounds_val,
 									subsample = subsamle_val,
-									# watchlist = list(train=dtrain, test=dtest),
+									early.stop.round = 50,
+									watchlist = list(train=dtrain, test=dtest),
 									objective = "multi:softprob",
 									eval_metric = "mlogloss")
 					pred = predict_model(model, test[, c(1:2), with = FALSE])
@@ -127,7 +128,7 @@ grid_search <- function(train, test){
 										mll = mll)
 					
 					results[[length(results)+1]] <- train_result
-					file_name = paste("out/cv2/", i, ".cv", sep = "")
+					file_name = paste("out/cv4/", i, ".cv", sep = "")
 					save(cv_results, file = file_name)
 					i = i + 1
 				}
@@ -138,5 +139,7 @@ grid_search <- function(train, test){
 	stop = Sys.time()
 	print(start)
 	print(stop)
+	file_name = paste("out/cv4/", "mll", ".cv", sep = "")
+	save(results, file = file_name)
 	return(results)
 }

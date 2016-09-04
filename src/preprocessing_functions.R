@@ -138,6 +138,9 @@ load_data <-function(is_train = TRUE){
 	
 	time_statistics = get_time_statistics(events)
 	gender_age = merge(gender_age, time_statistics, by = "device_id", all.x = TRUE)
+	rm(events, phone_brand_device_model)
+	gc()
+	# gender_age = get_app_statistics(gender_age)
 	return(gender_age)
 }
 
@@ -176,4 +179,64 @@ rename_column_names = function(data){
 	setnames(data,"22", "h22" )
 	setnames(data,"23", "h23" )
 	return(data)
+}
+
+get_app_statistics <- function(gender_age){
+	events = fread("data/events.csv")
+	events$device_id = as.character(events$device_id)
+	events = events[device_id %in% gender_age$device_id]
+	app_events = fread("data/app_events.csv")
+	app_labels = fread("data/app_labels.csv")
+	app_labels$label_id = as.factor(paste("l", app_labels$label_id, sep = ""))
+	ids = sort(unique(app_labels$label_id))
+	for(id in ids){
+		app_labels[[id]] = as.numeric(NA)
+	}
+	for (id in ids) {
+		app_labels[label_id ==id, (id):=1]
+	}
+	app_labels[, label_id := NULL]
+	app_labels = app_labels[, lapply(.SD, sum, na.rm = TRUE), by = app_id]
+	app_labels = app_labels[app_id %in% app_labels$app_id]
+	gc()
+	# label_categories = fread("data/label_categories.csv")
+	# labels = merge(app_labels, label_categories, by = "label_id")
+	gender_age$number_of_apps = 0
+	count =0
+	print(length(unique(events$device_id)))
+	app_stats = NULL
+	for (device in unique(events$device_id)) {
+		tmp_evets = events[device_id == device]
+		tmp_app_events = app_events[event_id %in% tmp_evets$event_id]
+		if(nrow(tmp_app_events) == 0){
+			next
+		}
+		tmp_number_of_apps = length(unique(tmp_app_events$app_id))
+		gender_age[device_id == device, number_of_apps := tmp_number_of_apps]
+		tmp_app_labels = app_labels[app_id %in% tmp_app_events$app_id]
+		tmp_app_labels[,app_id := NULL]
+		app_sum = colSums(tmp_app_labels, na.rm = TRUE)
+		app_sum = c(device_id = device, app_sum)
+		if(is.null(app_stats)){
+			app_stats = app_sum
+		}
+		else{
+			app_stats = rbind(app_stats, app_sum)
+		}
+		count = count + 1
+		if(count %% 100 == 0){
+			print(count)
+		}
+	}
+	app_stats = as.data.table(app_stats)
+	for(id in ids){
+		app_stats[[id]] = as.numeric(app_stats[[id]])
+	}
+	gender_age = merge(gender_age, app_stats, by = "device_id", all.x = TRUE)
+	for(id in ids){
+		gender_age[is.na(gender_age[[id]]), (id) := 0]
+	}
+	rm(app_labels, events, app_events)
+	gc()
+	return(gender_age)
 }
