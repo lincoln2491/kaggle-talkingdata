@@ -182,22 +182,23 @@ replace_clases_with_numbers <- function(data){
 }
 
 create_model <- function(data, params = get_initial_params()){
-	data_partition = createDataPartition(data$group, p = 0.8, list = FALSE, times = 1)
-	train_set = data[data_partition]
-	test_set = data[-data_partition]
-	tmp = create_set_and_labels(train_set)
-	dtrain = xgb.DMatrix(data = tmp[[1]], label = tmp[[2]])
+	# data_partition = createDataPartition(data$group, p = 0.8, list = FALSE, times = 1)
+	# train_set = data[data_partition]
+	# test_set = data[-data_partition]
+	 tmp = create_set_and_labels(data)
+	 dtrain = xgb.DMatrix(data = tmp[[1]], label = tmp[[2]])
+	# 
+	# tmp = create_set_and_labels(test_set)
+	# dtest = xgb.DMatrix(data = tmp[[1]], label = tmp[[2]])
 	
-	tmp = create_set_and_labels(test_set)
-	dtest = xgb.DMatrix(data = tmp[[1]], label = tmp[[2]])
 	
-	
-	#train = data[, !c("group"), with = FALSE]
-	#labels = data[, group]
-	#train = sparse.model.matrix(~.-1,data = train)
+	train = data[, !c("group"), with = FALSE]
+	labels = data[, group]
+	train = sparse.model.matrix(~.-1,data = train)
+	set.seed(666)
 	model = xgb.train(data = dtrain, params = params, 
-					num_class = 12, nthread = 7, nrounds = 205, early.stop.round = 10,
-					watchlist = list(train=dtrain, test=dtest),
+					num_class = 12, nthread = 7, nrounds = 130, #early.stop.round = 10,
+					#watchlist = list(train=dtrain, test=dtest),
 					objective = "multi:softprob", eval_metric = "mlogloss")
 	return(model)
 }
@@ -206,9 +207,9 @@ test_cv <- function(data, params = get_initial_params()){
 	train = data[, !c("group"), with = FALSE]
 	labels = data[, group]
 	train = sparse.model.matrix(~.-1,data = train)
-	
+	set.seed(666)
 	model = xgb.cv(data = train, label = labels, params = params, 
-					num_class = 12, nthread = 7, nrounds = 1500, nfold = 5,  
+					num_class = 12, nthread = 7, nrounds = 1500, nfold = 5, 
 					objective = "multi:softprob", eval_metric = "mlogloss")
 	return(model)
 }
