@@ -196,7 +196,7 @@ create_model <- function(data, params = get_initial_params()){
 	#labels = data[, group]
 	#train = sparse.model.matrix(~.-1,data = train)
 	model = xgboost(data = dtrain, params = params, 
-					num_class = 12, nthread = 7, nrounds = 500, early.stop.round = 10,
+					num_class = 12, nthread = 7, nrounds = 70, early.stop.round = 10,
 					watchlist = list(train=dtrain, test=dtest),
 					objective = "multi:softprob", eval_metric = "mlogloss")
 	return(model)
