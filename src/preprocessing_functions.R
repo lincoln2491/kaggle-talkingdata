@@ -144,6 +144,43 @@ load_data <-function(is_train = TRUE){
 	return(gender_age)
 }
 
+rename_column_names2 = function(data){
+	setnames(data,"X2016.04.30", "d20160430" )
+	setnames(data,"X2016.05.01", "d20160501" )
+	setnames(data,"X2016.05.02", "d20160502" )
+	setnames(data,"X2016.05.03", "d20160503" )
+	setnames(data,"X2016.05.04", "d20160504" )
+	setnames(data,"X2016.05.05", "d20160505" )
+	setnames(data,"X2016.05.06", "d20160506" )
+	setnames(data,"X2016.05.07", "d20160507" )
+	setnames(data,"X2016.05.08", "d20160508" )
+	setnames(data,"X0", "h0" )
+	setnames(data,"X1", "h1" )
+	setnames(data,"X2", "h2" )
+	setnames(data,"X3", "h3" )
+	setnames(data,"X4", "h4" )
+	setnames(data,"X5", "h5" )
+	setnames(data,"X6", "h6" )
+	setnames(data,"X7", "h7" )
+	setnames(data,"X8", "h8" )
+	setnames(data,"X9", "h9" )
+	setnames(data,"X10", "h10" )
+	setnames(data,"X11", "h11" )
+	setnames(data,"X12", "h12" )
+	setnames(data,"X13", "h13" )
+	setnames(data,"X14", "h14" )
+	setnames(data,"X15", "h15" )
+	setnames(data,"X16", "h16" )
+	setnames(data,"X17", "h17" )
+	setnames(data,"X18", "h18" )
+	setnames(data,"X19", "h19" )
+	setnames(data,"X20", "h20" )
+	setnames(data,"X21", "h21" )
+	setnames(data,"X22", "h22" )
+	setnames(data,"X23", "h23" )
+	return(data)
+}
+
 rename_column_names = function(data){
 	setnames(data,"2016-04-30", "d20160430" )
 	setnames(data,"2016-05-01", "d20160501" )
@@ -228,6 +265,8 @@ get_app_statistics <- function(gender_age){
 			print(count)
 		}
 	}
+	rm(app_labels, events, app_events)
+	gc()
 	app_stats = as.data.table(app_stats)
 	for(id in ids){
 		app_stats[[id]] = as.numeric(app_stats[[id]])
@@ -236,7 +275,7 @@ get_app_statistics <- function(gender_age){
 	for(id in ids){
 		gender_age[is.na(gender_age[[id]]), (id) := 0]
 	}
-	rm(app_labels, events, app_events)
+	# rm(app_labels)
 	gc()
 	return(gender_age)
 }
